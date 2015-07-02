@@ -23,7 +23,8 @@ value_provider={"character":fake.pystr(max_chars=5) ,
 		"smallint":fake.random_digit() ,
 		"int":fake.random_number(),
 		"bigint":fake.random_number(),
-		"integer":fake.random_number() ,
+		"integer":fake.random_number(),
+		"decimal":fake.random_number(),
 		"smallserial":fake.random_number(),
 		"serial":fake.random_number(),
 		"bigserial":fake.random_number(),
@@ -36,7 +37,19 @@ value_provider={"character":fake.pystr(max_chars=5) ,
 		"bytea":random.choice([0,1,10]),
 		"date":fake.date(pattern="%Y-%m-%d") ,
 		"interval":fake.time(pattern="%H:%M:%S"),
-		"timestamp without time zone":fake.date_time_ad()
+		"time":fake.time(pattern="%H:%M:%S") 
+		"timestamp":fake.date_time_this_year(),
+		"timestamp without time zone":fake.date_time_ad(),
+		"timestamp with time zone":fake.date_time_ad(),
+		"time without time zone":fake.time(pattern="%H:%M:%S"),
+		"time with time zone":fake.time(pattern="%H:%M:%S"),
+		"cidr":fake.ipv4(),
+		"inet":fake.ipv6(),
+		"ARRAY":fake.random_element(array=('2', '3', '4')),
+		"oid":fake.random_number(),
+		"string":fake.random_letter(),
+		"null": fake.random_digit_or_empty()
+
 		
 		}
 
