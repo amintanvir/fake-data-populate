@@ -16,6 +16,9 @@ try:
 except:
 	print "unable to connect"
 
+
+
+
 def find_table(cur):
 	"""Listing all the tables from the database """
 	cur.execute("SHOW TABLES;")

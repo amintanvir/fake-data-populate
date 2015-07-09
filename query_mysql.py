@@ -1,31 +1,34 @@
-query_for_constraint=""" select 
-	kcu.column_name,
-	
-	tc.constraint_type
-	
-	FROM information_schema.key_column_usage kcu
-	INNER JOIN information_schema.table_constraints tc
 
-	ON kcu.constraint_name = tc.constraint_name
+query_for_constraint=""" select 
+	ColName.column_name,
 	
-	where kcu.table_name = '%s'
+	TableCon.constraint_type
+	
+	FROM information_schema.key_column_usage ColName
+	INNER JOIN information_schema.table_constraints TableCon
+
+	ON ColName.constraint_name = TableCon.constraint_name
+	
+	where ColName.table_name = '%s'
 	ORDER BY constraint_type;"""
+
 
 query_for_datatypes= """
 	select 
-	c.column_name,
-	c.data_type,
-	c.character_maximum_length,
-	c.numeric_precision
+	Col.column_name,
+	Col.data_type,
+	Col.character_maximum_length,
+	Col.numeric_precision
 	
 
-	FROM information_schema.columns c
+	FROM information_schema.columns Col
 
-	WHERE c.table_name = '%s'
+	WHERE Col.table_name = '%s'
 	
 	;
 
 	"""
+
 query_for_reference="""
 				select 
 				ccu.table_name , ccu.column_name
