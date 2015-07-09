@@ -7,7 +7,7 @@ fake = Faker()
  
  #This will give database connection credentials
 user_credentials = {'host':'localhost',
-               'database':'db_fakertest',
+               'database':'postgres',
                'user':'postgres',
                'password':'cloudly1'}
 
@@ -160,4 +160,4 @@ def insert_tupel(tables,cur,conn,constraint,value_dic,n):
 constraint_list=constraint_finder(all_tables,cursor)
 print "All contraint list from targeted database database"
 print constraint_list
-insert_tupel(all_tables,cursor,conn,constraint_finder(all_tables,cursor),value_provider,10)
+insert_tupel(all_tables,cursor,conn,constraint_finder(all_tables,cursor),value_provider,2)
