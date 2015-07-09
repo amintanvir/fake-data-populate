@@ -1,4 +1,4 @@
-from query import *
+from query_psql import *
 import psycopg2
 from faker import Faker
 import random
@@ -37,7 +37,7 @@ value_provider={"character":fake.pystr(max_chars=5) ,
 		"bytea":random.choice([0,1,10]),
 		"date":fake.date(pattern="%Y-%m-%d") ,
 		"interval":fake.time(pattern="%H:%M:%S"),
-		"time":fake.time(pattern="%H:%M:%S") 
+		"time":fake.time(pattern="%H:%M:%S"),
 		"timestamp":fake.date_time_this_year(),
 		"timestamp without time zone":fake.date_time_ad(),
 		"timestamp with time zone":fake.date_time_ad(),
@@ -45,10 +45,11 @@ value_provider={"character":fake.pystr(max_chars=5) ,
 		"time with time zone":fake.time(pattern="%H:%M:%S"),
 		"cidr":fake.ipv4(),
 		"inet":fake.ipv6(),
-		"ARRAY":fake.random_element(array=('2', '3', '4')),
+		"ARRAY":fake.random_element(),
 		"oid":fake.random_number(),
 		"string":fake.random_letter(),
 		"null": fake.random_digit_or_empty()
+		
 
 		
 		}
@@ -74,6 +75,7 @@ def find_table(cur):
 all_tables=find_table(cursor)
 print "All tables from  targated Database"
 print all_tables
+
 
 #This function find out constraint from all tables
 def constraint_finder(tables,cur):

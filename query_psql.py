@@ -41,3 +41,4 @@ query_for_reference="""
 
 """
 
+query_for_checkconstaints=""" select constraint_name,check_clause from information_schema.check_constraints where constraint_schema='public'  """
