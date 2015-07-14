@@ -27,8 +27,8 @@ def value_provider(limit=None):
         return {"character":fake.pystr(max_chars=5) ,
                 "character varying":fake.pystr(max_chars=5) ,
                 "varchar":fake.pystr(max_chars=5),
-                "char":fake.pystr(max_chars=5),
-                "text":fake.random_letter() ,
+                "char":fake.random_letter,
+                "text":fake.pystr(max_chars=5),
                 "bit":random.choice([True, False]),
                 "varbit":random.choice([True, False]),
                 "bit varying":random.choice([True, False]),
@@ -50,6 +50,7 @@ def value_provider(limit=None):
                 "date":fake.date(pattern="%Y-%m-%d") ,
                 "interval":fake.time(pattern="%H:%M:%S"),
                 "time":fake.time(pattern="%H:%M:%S"),
+                "datetime":fake.date_time_this_year(),
                 "timestamp":fake.date_time_this_year(),
                 "timestamp without time zone":fake.date_time(),    
                 "timestamp with time zone":fake.date_time(),    
@@ -65,7 +66,8 @@ def value_provider(limit=None):
                 "enum":fake.random_number(),
                 "longtext":fake.pystr(max_chars=5),
                 "longblob":fake.pystr(max_chars=5),
-                "tinyint":fake.random_number()
+                "tinyint":fake.random_number(),
+                "blob":fake.pystr(max_chars=5)
                
                 }
 
@@ -189,6 +191,8 @@ def insert_into_table(tables,cur,constraint,number,conn):
                                 #column doesn't have constraints                               
                                         val= value_provider().get(str(column_datatypes[column_names.index(column)]))
                                         value_list.append(val)
+
+                        #If want to print each table at the time of data populates
                         print table
                         try:   
                                 query = ("INSERT INTO %s VALUES " % (table) + value_holder_tuple)

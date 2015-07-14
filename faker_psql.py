@@ -2,162 +2,170 @@ from query_psql import *
 import psycopg2
 from faker import Faker
 import random
-
+import sys
+import re
+import time
 fake = Faker()
  
- #This will give database connection credentials
 user_credentials = {'host':'localhost',
                'database':'postgres',
                'user':'postgres',
                'password':'cloudly1'}
-
-#Fake data provider for postgresql datatype
-value_provider={"character":fake.pystr(max_chars=5) ,
-		"character varying":fake.pystr(max_chars=5) ,
-		"varchar":fake.pystr(max_chars=5),
-		"char":fake.pystr(max_chars=5),
-		"text":fake.random_letter() ,
-		"bit":random.choice([True, False]),
-		"varbit":random.choice([True, False]),
-		"bit varying":random.choice([True, False]),
-		"smallint":fake.random_digit() ,
-		"int":fake.random_number(),
-		"bigint":fake.random_number(),
-		"integer":fake.random_number(),
-		"decimal":fake.random_number(),
-		"smallserial":fake.random_number(),
-		"serial":fake.random_number(),
-		"bigserial":fake.random_number(),
-		"numeric":fake.random_digit(),
-		"double precision":fake.random_number(),
-		"real":fake.random_number(),
-		"money":fake.random_number(),
-		"bool":random.choice([True, False]),
-		"boolean":random.choice([True, False]),
-		"bytea":random.choice([0,1,10]),
-		"date":fake.date(pattern="%Y-%m-%d") ,
-		"interval":fake.time(pattern="%H:%M:%S"),
-		"time":fake.time(pattern="%H:%M:%S"),
-		"timestamp":fake.date_time_this_year(),
-		"timestamp without time zone":fake.date_time_ad(),
-		"timestamp with time zone":fake.date_time_ad(),
-		"time without time zone":fake.time(pattern="%H:%M:%S"),
-		"time with time zone":fake.time(pattern="%H:%M:%S"),
-		"cidr":fake.ipv4(),
-		"inet":fake.ipv6(),
-		"ARRAY":fake.random_element(),
-		"oid":fake.random_number(),
-		"string":fake.random_letter(),
-		"null": fake.random_digit_or_empty()
-		
-
-		
-		}
-
-
-#Build connection with database
+ 
+def value_provider(limit=None):
+        return {"character":fake.pystr(max_chars=5) ,
+                "character varying":fake.pystr(max_chars=5) ,
+                "varchar":fake.pystr(max_chars=5),
+                "char":fake.pystr(max_chars=5),
+                "text":fake.random_letter() ,
+                "bit":random.choice([True, False]),
+                "varbit":random.choice([True, False]),
+                "bit varying":random.choice([True, False]),
+                "smallint":fake.random_digit() ,
+                "int":fake.random_number(),
+                "bigint":fake.random_number(),
+                "integer":fake.random_digit(),
+                "decimal":fake.random_number(),
+                "smallserial":fake.random_number(),
+                "serial":fake.random_number(),
+                "bigserial":fake.random_number(),
+                "numeric":fake.random_digit(),
+                "double precision":fake.random_number(),
+                "real":fake.random_number(),
+                "money":fake.random_number(),
+                "bool":random.choice([True, False]),
+                "boolean":random.choice([True, False]),
+                "bytea":random.choice([0,1,10]),
+                "date":fake.date(pattern="%Y-%m-%d") ,
+                "interval":fake.time(pattern="%H:%M:%S"),
+                "time":fake.time(pattern="%H:%M:%S"),
+                "timestamp":fake.date_time_this_year(),
+                "timestamp without time zone":fake.date_time(),    
+                "timestamp with time zone":fake.date_time(),    
+                "time without time zone":fake.time(pattern="%H:%M:%S"),
+                "time with time zone":fake.time(pattern="%H:%M:%S"),
+                "cidr":fake.ipv4(),
+                "inet":fake.ipv6(),
+                "ARRAY":'{{"jame","came"}}',
+                "oid":fake.random_number(),
+                "string":fake.random_letter(),
+                "null": fake.random_digit_or_empty(),
+                "tsvector":fake.random_letter()
+ 
+               
+                }
+def check_constraint_value_provider(*args):
+        return{
+                "timestamp without time zone": timestamp_wo_timezone(*args)
+                }
+def date_provider(start='1900-01-01 00:00:00',end='2020-01-01 00:00:00'):
+        time_format='%Y-%m-%d %H:%M:%S'
+        stime=time.mktime(time.strptime(start,time_format))
+        etime=time.mktime(time.strptime(end,time_format))
+        ptime = stime + random.random() * (etime-stime)
+        return time.strftime(time_format,time.localtime(ptime))
+ 
+def timestamp_wo_timezone(*args):
+        times_list= re.findall(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})',str(args))
+        return date_provider(*times_list)
+#print check_constraint_value_provider(*my_time).get("timestamp without time zone")
+ 
+ 
 try:
-	conn=psycopg2.connect(**user_credentials)
-	cursor = conn.cursor()
-	print "connected successfully"
+        connection=psycopg2.connect(**user_credentials)
+        cursor = connection.cursor()
+        print "connected successfully"
 except:
-	print "unable to connect"
-
-
-#This function retrieve all table from targeted database
+        print "unable to connect"
+ 
+ 
+ 
 def find_table(cur):
-	"""Listing all the tables from the database """
-	
-	cur.execute("select relname from pg_class where relkind='r' and relname !~ '^(pg_|sql_)';")
-	return  [table[0] for table in  cur.fetchall()]
-
-#Assign all table in container
+        """Listing all the tables from the database """
+       
+        cur.execute("select relname from pg_class where relkind='r' and relname !~ '^(pg_|sql_)';")
+        return  [table[0] for table in  cur.fetchall()]
+ 
 all_tables=find_table(cursor)
-print "All tables from  targated Database"
-print all_tables
-
-
-#This function find out constraint from all tables
+ 
+ 
+def disable_trigger(cur,tables,conn):
+        """this function disable all the trigger and truncate all the tables"""
+        #disabling trigger
+        try:
+                pass
+                cur.execute("SET session_replication_role = replica;")
+                #cur.execute("SET session_replication_role = DEFAULT;")
+        except:
+                print "problem disable trigger"
+ 
+        #truncating all the tables
+        for table in tables:
+                cur.execute("truncate %s cascade;"%table)
+                conn.commit()
+               
+               
+disable_trigger(cursor,all_tables,connection)
+ 
 def constraint_finder(tables,cur):
-	"""finding the constraints of all the tables in db"""
-	for table in tables:
-		cur.execute("truncate %s cascade;"%table)
-		cur.execute(query_for_constraint % table)
-		constraint_dic={}
-		
-		for i in cur.fetchall():
-			constraint_dic[i[0]] = str(i[1])
-		yield constraint_dic
-		
-
-
-
-
-#This function populate fake data in tables
-def insert_tupel(tables,cur,conn,constraint,value_dic,n):
-	#to disable all triggers;
-	try:
-		cur.execute("SET session_replication_role = replica;")
-		cur.execute("SET session_replication_role = DEFAULT;")
-	except:
-		print "problem disable trigger"
-	
-	for table in tables:#go through each table
-		try:
-			cur.execute("ALTER TABLE %s DISABLE TRIGGER %s"%(table,user))
-			
-			
-			
-			print "trigger successfully turn off"
-		except:
-			pass
-		
-
-		cur.execute(query_for_datatypes % table)
-		column_names= [value[0] for value in cur.fetchall()]
-		print "Table columns name"
-		print column_names
-		
-		cur.execute(query_for_datatypes % table)
-		column_datatypes=[value[1] for value in cur.fetchall()]
-		print "Table data type"
-		print column_datatypes
-		
-		constraint_dic=constraint.next()
-		
-		def place_holder(num_col):
-			value_tuple=()
-			for i in range (num_col):
-				value_tuple += ('%s',)
-			return str(tuple(value_tuple))
-
-
-		value_holder_tuple=place_holder(len(column_names))
-		for i in range (n):
-			value_list=[]
-			for column in column_names:
-			
-				if column in constraint_dic:
-					if (constraint_dic[str(column)] == 'FOREIGN KEY') or (constraint_dic[str(column)] == 'PRIMARY KEY') or (constraint_dic[str(column)] == 'UNIQUE') or (constraint_dic=='CHECK'):
-						value_list.append(i)
-						
-					elif (constraint_dic[str(column)] == 'CHECK'):
-						
-						cur.execute("ALTER TABLE %s DROP CHECK CONSTRAINT %s")% (table,constraint_dic[str(column)])
-						value_list.append(i)
-				else :
-					
-					try:
-						value_list.append(value_provider[column_datatypes[column_names.index(column)]])
-					except:
-
-						value_list.append('NULL')
-			query = ("INSERT INTO %s VALUES " % (table) + value_holder_tuple)
-			cur.execute(query % tuple(value_list))
-			conn.commit()
-		#conn.close()		 	
-			  			
-constraint_list=constraint_finder(all_tables,cursor)
-print "All contraint list from targeted database database"
-print constraint_list
-insert_tupel(all_tables,cursor,conn,constraint_finder(all_tables,cursor),value_provider,2)
+        """finding the constraints of all the tables in db and put them in a dictionary"""
+        for table in tables:
+                cur.execute(query_for_constraint % table)
+                constraint_dic={}
+                constraint_list=[]
+                #all_constraints is a list of tuple where each tuple contains (column_name,key_name) like (student_id,primary_key)
+                all_constraints=cur.fetchall()
+                for constraint in all_constraints:
+                        try:
+                                constraint_dic[constraint[0]].append(constraint[1])
+                        except:
+                                constraint_dic[constraint[0]] =[constraint[1]]
+                       
+                yield constraint_dic
+constraint_finder(all_tables,cursor)
+ 
+def place_holder(columns):
+        """creates tuple for inserting like if a table has 4 columns it returns('%s','%s','%s','%s')"""
+        value_tuple=()
+        for i in range(columns):
+                value_tuple += ('%s',)
+        return str(tuple(value_tuple))
+ 
+def inset_into_table(tables,cur,constraint,number,conn):
+        for table in tables:
+                cur.execute(query_for_datatypes % table)
+                column_names= [value[0] for value in cur.fetchall()]
+                cur.execute(query_for_datatypes % table)
+                column_datatypes=[value[1] for value in cur.fetchall()]
+                constraint_dic=constraint.next()
+                place_holder(len(column_names))
+                value_holder_tuple=place_holder(len(column_names))
+                #print "table name %s"% table
+                for i in range(number):
+                        value_list =[]
+                        for column in column_names:
+                                if column in constraint_dic:
+                                #column has constraints
+                                        if ('CHECK' in constraint_dic[str(column)]):
+                                                cur.execute(query_for_check%(table,column))
+                                                check_constraint= cur.fetchall()
+                                                value=check_constraint_value_provider(*check_constraint).get(str(column_datatypes[column_names.index(column)]))
+                                                value_list.append(value)
+                                        if (('FOREIGN KEY' in constraint_dic[str(column)]) or ('UNIQUE' in constraint_dic[str(column)]) or ('PRIMARY KEY' in constraint_dic[str(column)])):
+                                                value_list.append(i)
+                                               
+                                else:
+                                #column doesn't have constraints                               
+                                        val= value_provider().get(str(column_datatypes[column_names.index(column)]))
+                                        value_list.append(val)
+                        print table
+                        try:   
+                                query = ("INSERT INTO %s VALUES " % (table) + value_holder_tuple)
+                                cur.execute(query % tuple(value_list))
+                                conn.commit()
+                               
+                        except :
+                                print "problem found %s" % table
+                                print column_datatypes
+                                print value_list
+inset_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),4,connection)
