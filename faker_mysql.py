@@ -6,7 +6,23 @@ from faker import Faker
 import random
 fake = Faker()
 
-#Fake data provider for postgresql datatype
+
+#Database connection 
+host='localhost'
+user='root'
+password='cloudly1'
+database='db_test'
+connection = mdb.connect(host,user,password,database)
+
+try:
+	cursor = connection.cursor()
+	print "connected successfully"
+except:
+	print "unable to connect"
+
+
+
+#Fake data provider for mysql database datatype
 def value_provider(limit=None):
         return {"character":fake.pystr(max_chars=5) ,
                 "character varying":fake.pystr(max_chars=5) ,
@@ -45,28 +61,20 @@ def value_provider(limit=None):
                 "oid":fake.random_number(),
                 "string":fake.random_letter(),
                 "null": fake.random_digit_or_empty(),
-                "tsvector":fake.random_letter()
- 
+                "tsvector":fake.random_letter(),
+                "enum":fake.random_number(),
+                "longtext":fake.pystr(max_chars=5),
+                "longblob":fake.pystr(max_chars=5),
+                "tinyint":fake.random_number()
                
                 }
 
-#Database connection 
-host='localhost'
-user='root'
-password='cloudly1'
-database='db_test'
-connection = mdb.connect(host,user,password,database)
-
-try:
-	cursor = connection.cursor()
-	print "connected successfully"
-except:
-	print "unable to connect"
 
 
 
 
 
+#This function list down all tables from selected database
 def find_table(cur):
 	"""Listing all the tables from the database """
 	cur.execute("SHOW TABLES;")
@@ -79,7 +87,7 @@ print all_tables
 
 
 
-
+#Before populate data this function turn off all triggers and truncate all tables
 def disable_trigger(cur,tables,conn):
         """this function disable all the trigger and truncate all the tables"""
         #disabling trigger
@@ -98,16 +106,15 @@ def disable_trigger(cur,tables,conn):
 			except:
 				pass
 
-
         #truncating all the tables
         for table in tables:
                 cur.execute("truncate table %s;"%table)
                 conn.commit()
-               
-               
+                             
 disable_trigger(cursor,all_tables,connection)
 
 
+#This function list down all constraint from tables
 def constraint_finder(tables,cur):
         """finding the constraints of all the tables in db and put them in a dictionary"""
         for table in tables:
@@ -124,6 +131,7 @@ def constraint_finder(tables,cur):
                        
                 yield constraint_dic
 constraint_finder(all_tables,cursor)
+
 
 #Check constraint value provider
 def check_constraint_value_provider(*args):
@@ -154,7 +162,7 @@ def place_holder(columns):
  
 
 #This function populate fake data in tables
-def inset_into_table(tables,cur,constraint,number,conn):
+def insert_into_table(tables,cur,constraint,number,conn):
         for table in tables:
                 cur.execute(query_for_datatypes % table)
                 column_names= [value[0] for value in cur.fetchall()]
@@ -195,4 +203,6 @@ def inset_into_table(tables,cur,constraint,number,conn):
 constraint_list=constraint_finder(all_tables,cursor)
 print "All contraint list from targeted database database"
 print constraint_list
-inset_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),4,connection)
+
+#Change the number to populate fake data in each table according to you requirements
+insert_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),5,connection)
