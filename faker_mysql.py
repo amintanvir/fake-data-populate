@@ -11,7 +11,7 @@ fake = Faker()
 host='localhost'
 user='root'
 password='cloudly1'
-database='db_test'
+database='fakertest'
 connection = mdb.connect(host,user,password,database)
 
 try:
@@ -27,7 +27,7 @@ def value_provider(limit=None):
         return {"character":fake.pystr(max_chars=5) ,
                 "character varying":fake.pystr(max_chars=5) ,
                 "varchar":fake.pystr(max_chars=5),
-                "char":fake.random_letter,
+                "char":fake.random_letter(),
                 "text":fake.pystr(max_chars=5),
                 "bit":random.choice([True, False]),
                 "varbit":random.choice([True, False]),
@@ -35,11 +35,13 @@ def value_provider(limit=None):
                 "smallint":fake.random_digit() ,
                 "int":fake.random_number(),
                 "bigint":fake.random_number(),
+                "float":fake.random_number(),
                 "integer":fake.random_digit(),
                 "decimal":fake.random_number(),
                 "smallserial":fake.random_number(),
                 "serial":fake.random_number(),
                 "bigserial":fake.random_number(),
+                "double":fake.random_number(),
                 "numeric":fake.random_digit(),
                 "double precision":fake.random_number(),
                 "real":fake.random_number(),
@@ -51,7 +53,7 @@ def value_provider(limit=None):
                 "interval":fake.time(pattern="%H:%M:%S"),
                 "time":fake.time(pattern="%H:%M:%S"),
                 "datetime":fake.date_time_this_year(),
-                "timestamp":fake.date_time_this_year(),
+                "timestamp":fake.date_time_this_month(),
                 "timestamp without time zone":fake.date_time(),    
                 "timestamp with time zone":fake.date_time(),    
                 "time without time zone":fake.time(pattern="%H:%M:%S"),
@@ -65,9 +67,10 @@ def value_provider(limit=None):
                 "tsvector":fake.random_letter(),
                 "enum":fake.random_number(),
                 "longtext":fake.pystr(max_chars=5),
-                "longblob":fake.pystr(max_chars=5),
+                "longblob":fake.mime_type(category=None),
                 "tinyint":fake.random_number(),
-                "blob":fake.pystr(max_chars=5)
+                "blob":fake.mime_type(category=None),
+                "year":fake.year()
                
                 }
 
@@ -209,4 +212,4 @@ print "All contraint list from targeted database database"
 print constraint_list
 
 #Change the number to populate fake data in each table according to you requirements
-insert_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),20,connection)
+insert_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),5,connection)
