@@ -11,7 +11,7 @@ fake = Faker()
 host='localhost'
 user='root'
 password='cloudly1'
-database='fakertest'
+database='experiment'
 connection = mdb.connect(host,user,password,database)
 
 try:
@@ -171,12 +171,15 @@ def insert_into_table(tables,cur,constraint,number,conn):
         for table in tables:
                 cur.execute(query_for_datatypes % table)
                 column_names= [value[0] for value in cur.fetchall()]
+                print column_names
                 cur.execute(query_for_datatypes % table)
+
                 column_datatypes=[value[1] for value in cur.fetchall()]
+                print column_datatypes
                 constraint_dic=constraint.next()
                 place_holder(len(column_names))
                 value_holder_tuple=place_holder(len(column_names))
-                #print "table name %s"% table
+                print "table name %s"% table
                 for i in range(number):
                         value_list =[]
                         for column in column_names:
