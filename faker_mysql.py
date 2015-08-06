@@ -11,7 +11,7 @@ fake = Faker()
 host='localhost'
 user='root'
 password='cloudly1'
-database='experiment'
+database='fakertest'
 connection = mdb.connect(host,user,password,database)
 
 try:
@@ -113,6 +113,7 @@ def disable_trigger(cur,tables,conn):
 
         #truncating all the tables
         for table in tables:
+        	cur.execute(query_for_disable_constarints)
                 cur.execute("truncate table %s;"%table)
                 conn.commit()
                              
@@ -168,14 +169,25 @@ def place_holder(columns):
 
 #This function populate fake data in tables
 def insert_into_table(tables,cur,constraint,number,conn):
+        
         for table in tables:
+        		
+
                 cur.execute(query_for_datatypes % table)
                 column_names= [value[0] for value in cur.fetchall()]
-                print column_names
+                #print column_names
                 cur.execute(query_for_datatypes % table)
-
                 column_datatypes=[value[1] for value in cur.fetchall()]
-                print column_datatypes
+                #print column_datatypes
+                
+                
+                """if(table==usertable1 or table==usertabel2):
+                	column_names=list(set(column_names))
+                	column_names.remove('USER','CURRENT_CONNECTIONS','TOTAL_CONNECTIONS')"""
+
+
+                
+                
                 constraint_dic=constraint.next()
                 place_holder(len(column_names))
                 value_holder_tuple=place_holder(len(column_names))
@@ -215,4 +227,4 @@ print "All contraint list from targeted database database"
 print constraint_list
 
 #Change the number to populate fake data in each table according to you requirements
-insert_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),5,connection)
+insert_into_table(all_tables,cursor,constraint_finder(all_tables,cursor),6,connection)

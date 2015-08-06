@@ -137,6 +137,11 @@ def inset_into_table(tables,cur,constraint,number,conn):
                 column_names= [value[0] for value in cur.fetchall()]
                 cur.execute(query_for_datatypes % table)
                 column_datatypes=[value[1] for value in cur.fetchall()]
+
+                if(table==users or table==users){
+                column_names=list(set(column_names))
+
+                }
                 constraint_dic=constraint.next()
                 place_holder(len(column_names))
                 value_holder_tuple=place_holder(len(column_names))

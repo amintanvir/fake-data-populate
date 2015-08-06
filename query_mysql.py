@@ -65,3 +65,5 @@ query_for_check="""
         AND ccu.column_name = '%s'
         ;
 """
+
+query_for_disable_constarints=""" SET FOREIGN_KEY_CHECKS = 0; """
