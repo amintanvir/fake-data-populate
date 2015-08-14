@@ -16,9 +16,9 @@ database = 'fakertest'
 connection = mdb.connect(host, user, password, database)
 try:
     cursor = connection.cursor()
-    print "connected successfully"
+    print "Connected successfully"
 except:
-    print "unable to connect"
+    print "Unable to connect"
 
 
 # Fake data provider for mysql database datatype
@@ -83,7 +83,7 @@ def find_table(cur):
 
 # Assign all table in container
 all_tables = find_table(cursor)
-print "All tables from  targated Database"
+print "All tables from  %s Database" % database
 print all_tables
 
 
@@ -104,11 +104,10 @@ def disable_trigger(cur, tables, conn):
             cur.execute(query_for_disable_constarints)
             cur.execute(query_for_truncatetable % table)
             cur.execute(query_for_disabletrigger)
+            print "trigger successfully turn off"
             # cur.execute("ALTER TABLE %s DISABLE TRIGGER %s"%(table,conn))
             # cur.execute("ALTER TABLE %s DISABLE ALL TRIGGERS")%table
-            print "trigger successfully turn off"
             # truncating all the tables
-
             # cur.execute(query_for_disable_constarints)
             # cur.execute(query_for_truncatetable %table)
         except:
@@ -124,7 +123,6 @@ def constraint_finder(tables, cur):
     for table in tables:
         cur.execute(query_for_constraint % table)
         constraint_dic = {}
-        constraint_list = []
         # all_constraints is a list of tuple where each tuple contains (column_name,key_name) like (student_id,primary_key)
         all_constraints = cur.fetchall()
         for constraint in all_constraints:
@@ -137,6 +135,14 @@ def constraint_finder(tables, cur):
 
 
 constraint_finder(all_tables, cursor)
+
+
+def place_holder(columns):
+    """creates tuple for inserting like if a table has 4 columns it returns('%s','%s','%s','%s')"""
+    value_tuple = ()
+    for i in range(columns):
+        value_tuple += ('%s',)
+    return str(tuple(value_tuple))
 
 
 # Check constraint value provider
@@ -158,18 +164,7 @@ def timestamp_wo_timezone(*args):
     times_list = re.findall(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', str(args))
     return date_provider(*times_list)
 
-
 # print check_constraint_value_provider(*my_time).get("timestamp without time zone")
-
-
-
-
-def place_holder(columns):
-    """creates tuple for inserting like if a table has 4 columns it returns('%s','%s','%s','%s')"""
-    value_tuple = ()
-    for i in range(columns):
-        value_tuple += ('%s',)
-    return str(tuple(value_tuple))
 
 
 # This function populate fake data in tables
@@ -177,10 +172,10 @@ def insert_into_table(tables, cur, constraint, number, conn):
     for table in tables:
         cur.execute(query_for_datatypes % table)
         column_names = [value[0] for value in cur.fetchall()]
-        # print column_names
+        print column_names
         cur.execute(query_for_datatypes % table)
         column_datatypes = [value[1] for value in cur.fetchall()]
-        # print column_datatypes
+        print column_datatypes
         constraint_dic = constraint.next()
         place_holder(len(column_names))
         value_holder_tuple = place_holder(len(column_names))
@@ -197,7 +192,7 @@ def insert_into_table(tables, cur, constraint, number, conn):
                             str(column_datatypes[column_names.index(column)]))
                         value_list.append(value)
                     if (('FOREIGN KEY' in constraint_dic[str(column)]) or ('UNIQUE' in constraint_dic[str(column)]) or (
-                        'PRIMARY KEY' in constraint_dic[str(column)])):
+                                'PRIMARY KEY' in constraint_dic[str(column)])):
                         value_list.append(i)
 
                 else:
@@ -207,6 +202,7 @@ def insert_into_table(tables, cur, constraint, number, conn):
 
             # If want to print each table at the time of data populates
             print table
+
             try:
                 query = ("INSERT INTO %s VALUES " % (table) + value_holder_tuple)
                 cur.execute(query % tuple(value_list))
@@ -218,9 +214,10 @@ def insert_into_table(tables, cur, constraint, number, conn):
                 print value_list
 
 
-constraint_list = constraint_finder(all_tables, cursor)
-print "All contraint list from targeted database database"
-print constraint_list
+#constraint_list = constraint_finder(all_tables, cursor)
+# print "All contraint list from targeted database database"
+# print constraint_list
+
 
 # Change the number to populate fake data in each table according to you requirements
 insert_into_table(all_tables, cursor, constraint_finder(all_tables, cursor), 6, connection)
