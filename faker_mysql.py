@@ -220,4 +220,4 @@ def insert_into_table(tables, cur, constraint, number, conn):
 
 
 # Change the number to populate fake data in each table according to you requirements
-insert_into_table(all_tables, cursor, constraint_finder(all_tables, cursor), 6, connection)
+insert_into_table(all_tables, cursor, constraint_finder(all_tables, cursor), 5, connection)
