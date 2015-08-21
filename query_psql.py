@@ -1,5 +1,6 @@
 import psycopg2
-query_for_constraint= """
+
+query_for_constraint = """
 	select 
 	kcu.column_name,
 	
@@ -14,7 +15,7 @@ query_for_constraint= """
 	ORDER BY constraint_type
 	; 
 """
-query_for_datatypes= """
+query_for_datatypes = """
 	select 
 	c.column_name,
 	c.data_type,
@@ -29,7 +30,7 @@ query_for_datatypes= """
 	;
 
 	"""
-query_for_reference="""
+query_for_reference = """
 				select 
 				ccu.table_name , ccu.column_name
 				from information_schema.constraint_column_usage ccu
@@ -41,7 +42,7 @@ query_for_reference="""
 
 """
 
-query_for_table_ordering ="""
+query_for_table_ordering = """
         select tc.table_name
         FROM information_schema.table_constraints as tc
         INNER JOIN information_schema.constraint_column_usage as ccu  
@@ -51,7 +52,7 @@ query_for_table_ordering ="""
  
 """
 
-query_for_check="""
+query_for_check = """
         select
        
         cc.check_clause
